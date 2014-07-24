@@ -5,6 +5,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise, CanAwait, ExecutionContext, Future}
 import scala.reflect.ClassTag
 import scala.util.Try
+import com.gilt.gfc.util.Throwables
 import com.google.common.util.concurrent.{MoreExecutors, CheckedFuture, ListenableFuture}
 
 /**
@@ -50,11 +51,8 @@ object FutureConverters {
     }
 
     def asCheckedFuture[X <: Exception](implicit unknownExceptionMapper: Throwable => X, tag: ClassTag[X]): CheckedFuture[T, X] = {
-      def rootCause(t: Throwable, acc: Set[Throwable] = Set.empty): Throwable = {
-        Option(t.getCause).filterNot(acc.contains).fold(t)(t => rootCause(t, acc + t))
-      }
       CheckedFutureWrapper(asListenableFuture) { e =>
-        val rootExc = rootCause(e)
+        val rootExc = Throwables.rootCause(e)
         if (tag.runtimeClass.isAssignableFrom(rootExc.getClass)) rootExc.asInstanceOf[X] else unknownExceptionMapper(rootExc)
       }
     }
