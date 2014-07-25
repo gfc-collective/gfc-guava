@@ -11,7 +11,8 @@ libraryDependencies ++= Seq(
   "com.google.guava" % "guava" % "17.0",
   "com.google.code.findbugs" % "jsr305" % "2.0.2",
   "org.scalatest" %% "scalatest" % "2.1.7" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.11.4" % "test"
+  "org.scalacheck" %% "scalacheck" % "1.11.4" % "test",
+  "org.mockito" % "mockito-core" % "1.9.5" % "test"
 )
 
 publishMavenStyle := true

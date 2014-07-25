@@ -1,9 +1,10 @@
 package com.gilt.gfc.guava.future
 
+import java.io.IOException
 import java.util.concurrent.{Executors, ExecutionException}
 import scala.collection.JavaConverters._
 import com.google.common.base.{Optional, Predicate, Predicates}
-import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.{Futures, ListenableFuture}
 import org.scalatest.{Matchers, FunSuite}
 
 /**
@@ -18,11 +19,13 @@ class GuavaFuturesTest extends FunSuite with Matchers {
 
   import com.gilt.gfc.guava.future.GuavaFutures._
 
-  // some test fixtures
-  val future7 = ListenableFutureNow(7)
+  implicit val executor = Executors.newCachedThreadPool()
 
-  def service1(x: Int): ListenableFuture[Int] = ListenableFutureNow(x)
-  def service2(y: Int): ListenableFuture[Int] = ListenableFutureNow(y + 1)
+  // some test fixtures
+  val future7 = Futures.immediateFuture(7)
+
+  def service1(x: Int): ListenableFuture[Int] = Futures.immediateFuture(x)
+  def service2(y: Int): ListenableFuture[Int] = Futures.immediateFuture(y + 1)
   def service3(z: Int, delay: Long): ListenableFuture[Int] = GuavaFutures.future {
     Thread.sleep(delay)
     z
@@ -32,11 +35,9 @@ class GuavaFuturesTest extends FunSuite with Matchers {
     override def apply(t: Int): Boolean = t >= 0
   }
 
-  implicit val executor = Executors.newCachedThreadPool()
-
-  def failedServiceCall: ListenableFuture[Int] = GuavaFutures.future {
-    Thread.sleep(100L)
-    sys.error("Failed Service Call")
+  def failedServiceCall(delay: Long = 0L, exc: => Nothing = sys.error("Failed Service Call")): ListenableFuture[Int] = GuavaFutures.future {
+    Thread.sleep(delay)
+    exc
   }
 
   test("basic map") {
@@ -85,9 +86,9 @@ class GuavaFuturesTest extends FunSuite with Matchers {
 
     // when the filter fails, you end up with a future that will blow an execution exception
     // upon access
-    evaluating {
+    an [ExecutionException] should be thrownBy {
       result.get()
-    } should produce[ExecutionException]
+    }
 
     // The execution exception should wrap a MatchError that indicates what failed
     try {
@@ -101,7 +102,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
   test("subsequent evaluation stops after filter fails") {
     // When the filter fails, the subsequent clauses in the for comprehension should not execute
     var didExecute = false
-    def service3(x: Int): ListenableFuture[Int] = ListenableFutureNow {
+    def service3(x: Int): ListenableFuture[Int] = Futures.immediateFuture {
       didExecute = true; x
     }
     val result = for {
@@ -110,9 +111,9 @@ class GuavaFuturesTest extends FunSuite with Matchers {
       z <- service3(y)
     } yield z
 
-    evaluating {
+    an [ExecutionException] should be thrownBy {
       result.get()
-    } should produce[ExecutionException]
+    }
 
     didExecute should equal(false)
   }
@@ -126,7 +127,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
   }
 
   test("withEitherFallback failure") {
-    failedServiceCall.withEitherFallback.get match {
+    failedServiceCall().withEitherFallback.get match {
       case Right(_) => fail("Expected call to fail")
       case Left(t) => t.getMessage should equal("Failed Service Call")
     }
@@ -144,7 +145,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
 
   test("withOptionFallback failure") {
     var errMessage = "-"
-    failedServiceCall.withOptionFallback { err: Throwable =>
+    failedServiceCall().withOptionFallback { err: Throwable =>
       errMessage = err.getMessage
     }.get match {
       case Some(_) => fail("Expected call to fail")
@@ -163,7 +164,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
 
   test("withDefault failure") {
     var errMessage = "-"
-    failedServiceCall.withDefault(0, { err: Throwable =>
+    failedServiceCall().withDefault(0, { err: Throwable =>
       errMessage = err.getMessage
     }).get match {
       case 0 =>
@@ -197,30 +198,30 @@ class GuavaFuturesTest extends FunSuite with Matchers {
   }
 
   test("firstCompletedOf must return None if the only future passed is failing") {
-    val f1 = failedServiceCall
+    val f1 = failedServiceCall(100L)
     GuavaFutures.firstCompletedOf(List(f1).asJava).get should equal (Optional.absent[Int])
   }
 
   test("find must return None if the only future passed is failing") {
-    val f1 = failedServiceCall
+    val f1 = failedServiceCall()
     GuavaFutures.find(List(f1).asJava, MustBePositive).get should equal (Optional.absent[Int])
   }
 
   test("firstCompletedOf must return the first future that completes successfully and discard the other one") {
     val f1 = service3(10, 100)
     val f2 = service3(20, 1000)
-    val f3 = failedServiceCall
+    val f3 = failedServiceCall(100L)
     val f4 = service3(30, 3000)
     val f5 = service3(40, 4000)
-    val f6 = failedServiceCall
+    val f6 = failedServiceCall(100L)
 
     GuavaFutures.firstCompletedOf(List(f1, f2, f3, f4, f5, f6).asJava).get should equal (Optional.of(10))
 
     val now = System.currentTimeMillis
-    val f10 = failedServiceCall
+    val f10 = failedServiceCall(100L)
     val f11 = service3(40, 4000)
-    val f12 = failedServiceCall
-    val f13 = failedServiceCall
+    val f12 = failedServiceCall(100L)
+    val f13 = failedServiceCall(100L)
     val f14 = service3(30, 3000)
 
     GuavaFutures.firstCompletedOf(List(f10, f11, f12, f13, f14).asJava).get should equal (Optional.of(30))
@@ -247,10 +248,10 @@ class GuavaFuturesTest extends FunSuite with Matchers {
   }
 
   test("find must return None if all the futures are failing except one but it still does not matches the predicate") {
-    val f1 = failedServiceCall
-    val f2 = failedServiceCall
+    val f1 = failedServiceCall(100L)
+    val f2 = failedServiceCall(100L)
     val f3 = service3(-30, 100)
-    val f4 = failedServiceCall
+    val f4 = failedServiceCall(100L)
 
     GuavaFutures.find(List(f1, f2, f3, f4).asJava, MustBePositive).get should equal (Optional.absent[Int])
   }
@@ -268,9 +269,71 @@ class GuavaFuturesTest extends FunSuite with Matchers {
   }
 
   test("firstCompletedOf must return None if all the passed futures are failing") {
-    val f1 = failedServiceCall
-    val f2 = failedServiceCall
+    val f1 = failedServiceCall(100L)
+    val f2 = failedServiceCall(100L)
 
     GuavaFutures.firstCompletedOf(List(f1, f2).asJava).get should equal (Optional.absent[Int])
+  }
+
+  test("recover must return the original future if it succeeds") {
+    service1(1).recover{ case t: Throwable => 100 }.get should equal (1)
+  }
+
+  test("recover must throw the original exception if the partial function doesn't match") {
+    val thrown = the [ExecutionException] thrownBy {
+      failedServiceCall(exc = throw new IllegalArgumentException("boom")).recover{ case t: IOException => 100 }.get should equal (1)
+    }
+
+    thrown.getCause shouldBe a [IllegalArgumentException]
+    thrown.getCause.getMessage shouldBe "boom"
+  }
+
+  test("recover must return the recovered value if it fails") {
+    failedServiceCall(exc = throw new IOException("boom")).recover{ case t: IOException => 100 }.get should equal (100)
+  }
+
+  test("recover must throw the new exception if the partial function throws an exception") {
+    val thrown = the [ExecutionException] thrownBy {
+      failedServiceCall(exc = throw new IOException("boom")).recover{ case t: IOException => throw new IllegalArgumentException("bang") }.get should equal (1)
+    }
+
+    thrown.getCause shouldBe a [IllegalArgumentException]
+    thrown.getCause.getMessage shouldBe "bang"
+  }
+
+
+  test("recoverWith must return the original future if it succeeds") {
+    service1(1).recoverWith{ case t: Throwable => service1(100) }.get should equal (1)
+  }
+
+  test("recoverWith must throw the original exception if the partial function doesn't match") {
+    val thrown = the [ExecutionException] thrownBy {
+      failedServiceCall(exc = throw new IllegalArgumentException("boom")).recoverWith{ case t: IOException => service1(100) }.get should equal (1)
+    }
+
+    thrown.getCause shouldBe a [IllegalArgumentException]
+    thrown.getCause.getMessage shouldBe "boom"
+  }
+
+  test("recoverWith must return the recovered future if it fails") {
+    failedServiceCall(exc = throw new IOException("boom")).recoverWith{ case t: IOException => service1(100) }.get should equal (100)
+  }
+
+  test("recoverWith must throw the new exception if the partial function returns a failed future") {
+    val thrown = the [ExecutionException] thrownBy {
+      failedServiceCall(exc = throw new IOException("boom")).recoverWith{ case t: IOException => failedServiceCall(exc = throw new IllegalArgumentException("bang")) }.get should equal (1)
+    }
+
+    thrown.getCause shouldBe a [IllegalArgumentException]
+    thrown.getCause.getMessage shouldBe "bang"
+  }
+
+  test("recoverWith must throw the new exception if the partial function throws an exception") {
+    val thrown = the [ExecutionException] thrownBy {
+      failedServiceCall(exc = throw new IOException("boom")).recoverWith{ case t: IOException => throw new IllegalArgumentException("bang") }.get should equal (1)
+    }
+
+    thrown.getCause shouldBe a [IllegalArgumentException]
+    thrown.getCause.getMessage shouldBe "bang"
   }
 }
