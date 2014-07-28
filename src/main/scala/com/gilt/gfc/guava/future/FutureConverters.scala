@@ -48,11 +48,8 @@ object FutureConverters {
               val value = guavaFuture.get
               promise.trySuccess(value)
             } catch {
-              case e: ExecutionException if (e.getCause !=  null) =>
-                promise.tryFailure(e.getCause)
-              case e: Throwable => {
-                promise.tryFailure(e)
-              }
+              case e: ExecutionException if (e.getCause != null) => promise.tryFailure(e.getCause)
+              case e: Throwable => promise.tryFailure(e)
             }
           }
         }
