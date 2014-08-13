@@ -231,4 +231,22 @@ case class RichListenableFuture[T](future: ListenableFuture[T]) {
     }
     Futures.withFallback(future, fallBack, executor)
   }
+
+  /** Creates a new future by applying the 's' function to the successful result of
+    *  this future, or the 'f' function to the failed result. If there is any non-fatal
+    *  exception thrown when 's' or 'f' is applied, that exception will be propagated
+    *  to the resulting future.
+    *
+    *  @param  s  function that transforms a successful result of the receiver into a
+    *             successful result of the returned future
+    *  @param  f  function that transforms a failure of the receiver into a failure of
+    *             the returned future
+    *  @return    a future that will be completed with the transformed value
+    */
+  def transform[U](s: T => U, f: Throwable => Throwable)(implicit executor: ExecutorService = MoreExecutors.sameThreadExecutor()): ListenableFuture[U] = {
+    val fallBack = new FutureFallback[U] {
+      override def create(t: Throwable): ListenableFuture[U] = Futures.immediateFailedFuture(f(t))
+    }
+    Futures.withFallback(map(s), fallBack, executor)
+  }
 }

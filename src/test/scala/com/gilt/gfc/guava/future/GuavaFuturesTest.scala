@@ -281,7 +281,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
 
   test("recover must throw the original exception if the partial function doesn't match") {
     val thrown = the [ExecutionException] thrownBy {
-      failedServiceCall(exc = throw new IllegalArgumentException("boom")).recover{ case t: IOException => 100 }.get should equal (1)
+      failedServiceCall(exc = throw new IllegalArgumentException("boom")).recover{ case t: IOException => 100 }.get
     }
 
     thrown.getCause shouldBe a [IllegalArgumentException]
@@ -294,7 +294,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
 
   test("recover must throw the new exception if the partial function throws an exception") {
     val thrown = the [ExecutionException] thrownBy {
-      failedServiceCall(exc = throw new IOException("boom")).recover{ case t: IOException => throw new IllegalArgumentException("bang") }.get should equal (1)
+      failedServiceCall(exc = throw new IOException("boom")).recover{ case t: IOException => throw new IllegalArgumentException("bang") }.get
     }
 
     thrown.getCause shouldBe a [IllegalArgumentException]
@@ -308,7 +308,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
 
   test("recoverWith must throw the original exception if the partial function doesn't match") {
     val thrown = the [ExecutionException] thrownBy {
-      failedServiceCall(exc = throw new IllegalArgumentException("boom")).recoverWith{ case t: IOException => service1(100) }.get should equal (1)
+      failedServiceCall(exc = throw new IllegalArgumentException("boom")).recoverWith{ case t: IOException => service1(100) }.get
     }
 
     thrown.getCause shouldBe a [IllegalArgumentException]
@@ -321,7 +321,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
 
   test("recoverWith must throw the new exception if the partial function returns a failed future") {
     val thrown = the [ExecutionException] thrownBy {
-      failedServiceCall(exc = throw new IOException("boom")).recoverWith{ case t: IOException => failedServiceCall(exc = throw new IllegalArgumentException("bang")) }.get should equal (1)
+      failedServiceCall(exc = throw new IOException("boom")).recoverWith{ case t: IOException => failedServiceCall(exc = throw new IllegalArgumentException("bang")) }.get
     }
 
     thrown.getCause shouldBe a [IllegalArgumentException]
@@ -330,7 +330,50 @@ class GuavaFuturesTest extends FunSuite with Matchers {
 
   test("recoverWith must throw the new exception if the partial function throws an exception") {
     val thrown = the [ExecutionException] thrownBy {
-      failedServiceCall(exc = throw new IOException("boom")).recoverWith{ case t: IOException => throw new IllegalArgumentException("bang") }.get should equal (1)
+      failedServiceCall(exc = throw new IOException("boom")).recoverWith{ case t: IOException => throw new IllegalArgumentException("bang") }.get
+    }
+
+    thrown.getCause shouldBe a [IllegalArgumentException]
+    thrown.getCause.getMessage shouldBe "bang"
+  }
+
+  test("transform successful future") {
+    service1(1).transform(v => (v * 2).toString, identity).get should equal("2")
+  }
+
+  test("transform successful future fails") {
+    val thrown = the [ExecutionException] thrownBy {
+      service1(1).transform(v => throw new IllegalArgumentException("boom"), identity).get
+    }
+
+    thrown.getCause shouldBe a [IllegalArgumentException]
+    thrown.getCause.getMessage shouldBe "boom"
+  }
+
+  test("transform failed future") {
+    val thrown = the [ExecutionException] thrownBy {
+      failedServiceCall(exc = throw new IOException("boom")).transform(identity, t =>
+        if (t.getMessage == "boom") {
+          new IllegalArgumentException("bang")
+        } else {
+          t
+        }
+      ).get
+    }
+
+    thrown.getCause shouldBe a [IllegalArgumentException]
+    thrown.getCause.getMessage shouldBe "bang"
+  }
+
+  test("transform failed future fails") {
+    val thrown = the [ExecutionException] thrownBy {
+      failedServiceCall(exc = throw new IOException("boom")).transform(identity, t =>
+        if (t.getMessage == "boom") {
+          throw new IllegalArgumentException("bang")
+        } else {
+          throw t
+        }
+      ).get
     }
 
     thrown.getCause shouldBe a [IllegalArgumentException]
