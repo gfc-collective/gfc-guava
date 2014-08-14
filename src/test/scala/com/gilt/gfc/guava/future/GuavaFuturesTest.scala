@@ -343,7 +343,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
 
   test("transform successful future fails") {
     val thrown = the [ExecutionException] thrownBy {
-      service1(1).transform(v => throw new IllegalArgumentException("boom"), identity).get
+      service1(1).transform(_ => throw new IllegalArgumentException("boom"), _ => throw new IllegalArgumentException("bang")).get
     }
 
     thrown.getCause shouldBe a [IllegalArgumentException]

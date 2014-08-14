@@ -152,11 +152,7 @@ case class RichListenableFuture[T](future: ListenableFuture[T]) {
    * caught and Right[T] representing desired results.
    */
   def withEitherFallback: ListenableFuture[Either[Throwable, T]] = {
-    val fallBackToLeft = new FutureFallback[Either[Throwable, T]] {
-      override def create(t: Throwable): ListenableFuture[Either[Throwable, T]] = {
-        Futures.immediateFuture(Left(t))
-      }
-    }
+    val fallBackToLeft = newFallBack(t => Futures.immediateFuture(Left(t)))
     Futures.withFallback(map(Right(_)), fallBackToLeft)
   }
 
@@ -178,11 +174,9 @@ case class RichListenableFuture[T](future: ListenableFuture[T]) {
    * If no errorCallback is specified the exception is logged as an error.
    */
   def withOptionFallback(errorCallback: (Throwable) => Unit = { ex: Throwable => error(ex)}): ListenableFuture[Option[T]] = {
-    val fallBackToNone = new FutureFallback[Option[T]] {
-      override def create(t: Throwable): ListenableFuture[Option[T]] = {
-        errorCallback(t) // to avoid embedding error logging here
-        Futures.immediateFuture(None)
-      }
+    val fallBackToNone = newFallBack { t =>
+      errorCallback(t) // to avoid embedding error logging here
+      Futures.immediateFuture(None)
     }
     Futures.withFallback(map(Option(_)), fallBackToNone)
   }
@@ -195,11 +189,9 @@ case class RichListenableFuture[T](future: ListenableFuture[T]) {
    * If no errorCallback is specified the exception is logged as an error.
    */
   def withDefault(fallbackValue: T, errorCallback: (Throwable) => Unit = { ex: Throwable => error(ex)}): ListenableFuture[T] = {
-    val fallBack = new FutureFallback[T] {
-      override def create(t: Throwable): ListenableFuture[T] = {
-        errorCallback(t) // to avoid embedding error logging here
-        Futures.immediateFuture(fallbackValue)
-      }
+    val fallBack = newFallBack { t =>
+      errorCallback(t) // to avoid embedding error logging here
+      Futures.immediateFuture(fallbackValue)
     }
     Futures.withFallback(future, fallBack)
   }
@@ -209,10 +201,8 @@ case class RichListenableFuture[T](future: ListenableFuture[T]) {
     *  a valid result then the new future will contain the same.
     */
   def recover[U >: T](pf: PartialFunction[Throwable, U])(implicit executor: ExecutorService = MoreExecutors.sameThreadExecutor()): ListenableFuture[U] = {
-    val fallBack = new FutureFallback[U] {
-      override def create(t: Throwable): ListenableFuture[U] = {
-        GuavaFutures.future(pf.applyOrElse(t, { t: Throwable => throw t }))
-      }
+    val fallBack = newFallBack { t =>
+      GuavaFutures.future(pf.applyOrElse(t, (t: Throwable) => throw t))
     }
     Futures.withFallback(future, fallBack, executor)
   }
@@ -224,10 +214,8 @@ case class RichListenableFuture[T](future: ListenableFuture[T]) {
     *  a valid result then the new future will contain the same result.
     */
   def recoverWith[U >: T](pf: PartialFunction[Throwable, ListenableFuture[U]])(implicit executor: ExecutorService = MoreExecutors.sameThreadExecutor()): ListenableFuture[U] = {
-    val fallBack = new FutureFallback[U] {
-      override def create(t: Throwable): ListenableFuture[U] = {
-        pf.applyOrElse(t, { t: Throwable => Futures.immediateFailedFuture(t) })
-      }
+    val fallBack: FutureFallback[U] = newFallBack { t =>
+      pf.applyOrElse(t, (t: Throwable) => Futures.immediateFailedFuture(t))
     }
     Futures.withFallback(future, fallBack, executor)
   }
@@ -244,9 +232,12 @@ case class RichListenableFuture[T](future: ListenableFuture[T]) {
     *  @return    a future that will be completed with the transformed value
     */
   def transform[U](s: T => U, f: Throwable => Throwable)(implicit executor: ExecutorService = MoreExecutors.sameThreadExecutor()): ListenableFuture[U] = {
-    val fallBack = new FutureFallback[U] {
-      override def create(t: Throwable): ListenableFuture[U] = Futures.immediateFailedFuture(f(t))
-    }
-    Futures.withFallback(map(s), fallBack, executor)
+    val fallBack: FutureFallback[T] = newFallBack(t => Futures.immediateFailedFuture(f(t)))
+    import GuavaFutures.lf2rlf
+    Futures.withFallback(future, fallBack, executor).map(s)
+  }
+
+  private def newFallBack[T](f: Throwable => ListenableFuture[T]): FutureFallback[T] = new FutureFallback[T] {
+    override def create(t: Throwable): ListenableFuture[T] = f(t)
   }
 }
