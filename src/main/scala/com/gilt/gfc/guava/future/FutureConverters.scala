@@ -28,7 +28,7 @@ object FutureConverters {
   implicit class ScalaFutureConverter[T](val scalaFuture: Future[T]) extends AnyVal {
     def asListenableFuture: ListenableFuture[T] = {
       scalaFuture match {
-        case fa: ListenableFutureAdapter[T] => fa.listenableFuture
+        case ListenableFutureAdapter(_, lf) => lf
         case _ => new ScalaFutureAdapter(scalaFuture)
       }
     }
@@ -60,8 +60,7 @@ object FutureConverters {
     }
   }
 
-  class ListenableFutureAdapter[T](delegate: Future[T], guavaFutureF: => ListenableFuture[T]) extends Future[T] {
-    def listenableFuture = guavaFutureF
+  case class ListenableFutureAdapter[T](delegate: Future[T], listenableFuture: ListenableFuture[T]) extends Future[T] {
     override def onComplete[U](func: (Try[T]) => U)(implicit executor: ExecutionContext): Unit = delegate.onComplete(func)
     override def isCompleted: Boolean = delegate.isCompleted
     override def value: Option[Try[T]] = delegate.value
@@ -73,7 +72,7 @@ object FutureConverters {
     override def recover[U >: T](pf: PartialFunction[Throwable, U])(implicit executor: ExecutionContext): Future[U] = {
       import com.gilt.gfc.guava.future.GuavaFutures._
       new ListenableFutureAdapter(delegate.recover(pf),
-                                  guavaFutureF.recover(pf))
+                                  listenableFuture.recover(pf))
     }
     override def recoverWith[U >: T](pf: PartialFunction[Throwable, Future[U]])(implicit executor: ExecutionContext): Future[U] = {
       val recoveredScalaFuture = delegate.recoverWith(pf)
