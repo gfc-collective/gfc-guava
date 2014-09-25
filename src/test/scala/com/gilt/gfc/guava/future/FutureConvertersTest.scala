@@ -1,5 +1,6 @@
 package com.gilt.gfc.guava.future
 
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{ExecutionException, TimeUnit, Executor}
 
 import scala.concurrent.{Await, Future}
@@ -88,24 +89,24 @@ class FutureConvertersTest extends FunSuite with Matchers with MockitoSugar {
 
   test("ScalaFuture to ListenableFuture to ScalaFuture returns original ScalaFuture") {
     val future = Future.successful(1)
-    future.asListenableFuture.asScala shouldBe future
+    future.asListenableFuture.asScala should be theSameInstanceAs future
   }
 
   test("ScalaFuture to CheckedFuture to ScalaFuture returns original ScalaFuture") {
     val future = Future.successful(1)
-    future.asCheckedFuture.asScala shouldBe future
+    future.asCheckedFuture.asScala should be theSameInstanceAs future
   }
 
   test("ListenableFuture to ScalaFuture to ListenableFuture returns original ListenableFuture") {
     val future = Futures.immediateFuture(1)
-    future.asScala.asListenableFuture shouldBe future
+    future.asScala.asListenableFuture should be theSameInstanceAs future
   }
 
   test("ListenableFuture to ScalaFuture to CheckedFuture returns wrapped original ListenableFuture") {
     val future = Futures.immediateFuture(1)
     val checkedFuture = future.asScala.asCheckedFuture
     checkedFuture shouldBe a [MappingCheckedFuture[_, _]]
-    checkedFuture.asInstanceOf[MappingCheckedFuture[Int, Exception]].wrapped shouldBe future
+    checkedFuture.asInstanceOf[MappingCheckedFuture[Int, Exception]].wrapped should be theSameInstanceAs future
   }
 
   test("ScalaFutureAdapter functions") {
@@ -135,78 +136,92 @@ class FutureConvertersTest extends FunSuite with Matchers with MockitoSugar {
     verifyNoMoreInteractions(future)
   }
 
-  test("ScalaFuture.map should map wrapped ListenableFuture") {
+  test("ScalaFuture.map should map ListenableFuture") {
     val gFuture = Futures.immediateFuture(1)
     val sFuture = gFuture.asScala
 
     val mappedFuture = sFuture.map(_.toString)
     mappedFuture.await shouldBe "1"
-    mappedFuture shouldBe a [ListenableFutureAdapter[_]]
-    val mappedListenableFuture = mappedFuture.asInstanceOf[ListenableFutureAdapter[String]].listenableFuture
+    mappedFuture should not be a [ListenableFutureAdapter[_]]
+    val mappedListenableFuture = mappedFuture.asListenableFuture
     mappedListenableFuture.get shouldBe "1"
   }
 
-  test("ScalaFuture.recover should recover wrapped ListenableFuture") {
+  test("ScalaFuture.map should call map function only once") {
+    val gFuture = Futures.immediateFuture(1)
+    val sFuture = gFuture.asScala
+
+    val count = new AtomicInteger(0)
+    val mappedFuture = sFuture.map{ i =>
+      count.incrementAndGet()
+      i.toString
+    }
+    mappedFuture.await shouldBe "1"
+    mappedFuture.asListenableFuture.get shouldBe "1"
+    count.get shouldBe 1
+  }
+
+  test("ScalaFuture.recover should recover ListenableFuture") {
     val gFuture: ListenableFuture[Int] = Futures.immediateFailedFuture(new Exception)
     val sFuture = gFuture.asScala
 
     val recoveredFuture = sFuture.recover { case ex: Exception => 2 }
     recoveredFuture.await shouldBe 2
-    recoveredFuture shouldBe a [ListenableFutureAdapter[_]]
-    val recoveredListenableFuture = recoveredFuture.asInstanceOf[ListenableFutureAdapter[Int]].listenableFuture
+    recoveredFuture should not be a [ListenableFutureAdapter[_]]
+    val recoveredListenableFuture = recoveredFuture.asListenableFuture
     recoveredListenableFuture.get shouldBe 2
   }
 
-  test("ScalaFuture.recover should throw same Exception in wrapped ListenableFuture") {
+  test("ScalaFuture.recover should throw same Exception in ListenableFuture") {
     val gFuture: ListenableFuture[Int] = Futures.immediateFailedFuture(new SomeException)
     val sFuture = gFuture.asScala
 
     val recoverFail = new SomeOtherException
     val recoveredFuture = sFuture.recover { case ex: SomeException => throw recoverFail }
     a [SomeOtherException] should be thrownBy recoveredFuture.await
-    recoveredFuture shouldBe a [ListenableFutureAdapter[_]]
-    val recoveredListenableFuture = recoveredFuture.asInstanceOf[ListenableFutureAdapter[Int]].listenableFuture
+    recoveredFuture should not be a [ListenableFutureAdapter[_]]
+    val recoveredListenableFuture = recoveredFuture.asListenableFuture
     val thrown = the[ExecutionException] thrownBy {
       recoveredListenableFuture.get
     }
     thrown.getCause shouldBe recoverFail
   }
 
-  test("ScalaFuture.recoverWith should recoverWith wrapped ListenableFuture") {
+  test("ScalaFuture.recoverWith should recoverWith ListenableFuture") {
     val gFuture: ListenableFuture[Int] = Futures.immediateFailedFuture(new Exception)
     val sFuture = gFuture.asScala
 
     val recoveredFuture = sFuture.recoverWith { case ex: Exception => Future.successful(3) }
     recoveredFuture.await shouldBe 3
-    recoveredFuture shouldBe a [ListenableFutureAdapter[_]]
-    val recoveredListenableFuture = recoveredFuture.asInstanceOf[ListenableFutureAdapter[Int]].listenableFuture
+    recoveredFuture should not be a [ListenableFutureAdapter[_]]
+    val recoveredListenableFuture = recoveredFuture.asListenableFuture
     recoveredListenableFuture.get shouldBe 3
   }
 
-  test("ScalaFuture.recoverWith should throw same Exception in wrapped ListenableFuture") {
+  test("ScalaFuture.recoverWith should throw same Exception in ListenableFuture") {
     val gFuture: ListenableFuture[Int] = Futures.immediateFailedFuture(new SomeException)
     val sFuture = gFuture.asScala
 
     val recoverFail = new SomeOtherException
     val recoveredFuture = sFuture.recoverWith { case ex: SomeException => Future.failed(recoverFail) }
     a [SomeOtherException] should be thrownBy recoveredFuture.await
-    recoveredFuture shouldBe a [ListenableFutureAdapter[_]]
-    val recoveredListenableFuture = recoveredFuture.asInstanceOf[ListenableFutureAdapter[Int]].listenableFuture
+    recoveredFuture should not be a [ListenableFutureAdapter[_]]
+    val recoveredListenableFuture = recoveredFuture.asListenableFuture
     val thrown = the[ExecutionException] thrownBy {
       recoveredListenableFuture.get
     }
     thrown.getCause shouldBe recoverFail
   }
 
-  test("ScalaFuture.recoverWith should throw same Exception in wrapped ListenableFuture when the recover pf blows") {
+  test("ScalaFuture.recoverWith should throw same Exception in ListenableFuture when the recover pf blows") {
     val gFuture: ListenableFuture[Int] = Futures.immediateFailedFuture(new SomeException)
     val sFuture = gFuture.asScala
 
     val recoverFail = new SomeOtherException
     val recoveredFuture = sFuture.recoverWith { case ex: SomeException => throw recoverFail }
     a [SomeOtherException] should be thrownBy recoveredFuture.await
-    recoveredFuture shouldBe a [ListenableFutureAdapter[_]]
-    val recoveredListenableFuture = recoveredFuture.asInstanceOf[ListenableFutureAdapter[Int]].listenableFuture
+    recoveredFuture should not be a [ListenableFutureAdapter[_]]
+    val recoveredListenableFuture = recoveredFuture.asListenableFuture
     val thrown = the[ExecutionException] thrownBy {
       recoveredListenableFuture.get
     }

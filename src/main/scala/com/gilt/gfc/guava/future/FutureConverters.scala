@@ -28,7 +28,7 @@ object FutureConverters {
   implicit class ScalaFutureConverter[T](val scalaFuture: Future[T]) extends AnyVal {
     def asListenableFuture: ListenableFuture[T] = {
       scalaFuture match {
-        case ListenableFutureAdapter(_, lf) => lf
+        case ListenableFutureAdapter(lf) => lf
         case _ => new ScalaFutureAdapter(scalaFuture)
       }
     }
@@ -38,29 +38,25 @@ object FutureConverters {
     }
   }
 
-  object ListenableFutureAdapter {
-    def apply[T](guavaFuture: ListenableFuture[T]): ListenableFutureAdapter[T] = {
-      val delegate = {
-        val promise: Promise[T] = Promise()
-        val callbackListener = new Runnable {
-          def run {
-            try {
-              val value = guavaFuture.get
-              promise.trySuccess(value)
-            } catch {
-              case e: ExecutionException if (e.getCause != null) => promise.tryFailure(e.getCause)
-              case e: Throwable => promise.tryFailure(e)
-            }
+  case class ListenableFutureAdapter[T](guavaFuture: ListenableFuture[T]) extends Future[T] {
+
+    val delegate: Future[T] = {
+      val promise: Promise[T] = Promise()
+      val callbackListener = new Runnable {
+        def run {
+          try {
+            val value = guavaFuture.get
+            promise.trySuccess(value)
+          } catch {
+            case e: ExecutionException if (e.getCause != null) => promise.tryFailure(e.getCause)
+            case e: Throwable => promise.tryFailure(e)
           }
         }
-        guavaFuture.addListener(callbackListener, MoreExecutors.sameThreadExecutor())
-        promise.future
       }
-      new ListenableFutureAdapter(delegate, guavaFuture)
+      guavaFuture.addListener(callbackListener, MoreExecutors.sameThreadExecutor())
+      promise.future
     }
-  }
 
-  case class ListenableFutureAdapter[T](delegate: Future[T], listenableFuture: ListenableFuture[T]) extends Future[T] {
     override def onComplete[U](func: (Try[T]) => U)(implicit executor: ExecutionContext): Unit = delegate.onComplete(func)
     override def isCompleted: Boolean = delegate.isCompleted
     override def value: Option[Try[T]] = delegate.value
@@ -68,20 +64,6 @@ object FutureConverters {
     override def ready(atMost: Duration)(implicit permit: CanAwait): ListenableFutureAdapter.this.type = {
       delegate.ready(atMost)(permit)
       this
-    }
-    override def recover[U >: T](pf: PartialFunction[Throwable, U])(implicit executor: ExecutionContext): Future[U] = {
-      import com.gilt.gfc.guava.future.GuavaFutures._
-      new ListenableFutureAdapter(delegate.recover(pf),
-                                  listenableFuture.recover(pf))
-    }
-    override def recoverWith[U >: T](pf: PartialFunction[Throwable, Future[U]])(implicit executor: ExecutionContext): Future[U] = {
-      val recoveredScalaFuture = delegate.recoverWith(pf)
-      new ListenableFutureAdapter(recoveredScalaFuture,
-                                  ScalaFutureAdapter(recoveredScalaFuture))
-    }
-    override def map[S](f: T => S)(implicit executor: ExecutionContext): ListenableFutureAdapter[S] = {
-      import com.gilt.gfc.guava.future.GuavaFutures._
-      new ListenableFutureAdapter(delegate.map(f), listenableFuture.map(f))
     }
   }
 
