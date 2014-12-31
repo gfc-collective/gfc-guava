@@ -2,16 +2,16 @@ name := "gfc-guava"
 
 organization := "com.gilt"
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.4"
 
-crossScalaVersions := Seq("2.11.2", "2.10.4")
+crossScalaVersions := Seq("2.11.4", "2.10.4")
 
 libraryDependencies ++= Seq(
   "com.gilt" %% "gfc-util" % "0.0.3",
   "com.google.guava" % "guava" % "18.0",
   "com.google.code.findbugs" % "jsr305" % "2.0.2",
-  "org.scalatest" %% "scalatest" % "2.2.2" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.11.5" % "test",
+  "org.scalatest" %% "scalatest" % "2.2.3" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.12.1" % "test",
   "org.mockito" % "mockito-core" % "1.9.5" % "test"
 )
 
