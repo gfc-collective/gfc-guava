@@ -1,6 +1,6 @@
 package com.gilt.gfc.guava
 
-import com.google.common.base.{Optional, Predicate, Supplier, Function => GFunction}
+import com.google.common.base.{Optional, Supplier, Function => GFunction}
 import org.scalatest.{Matchers, FunSuite}
 
 /**

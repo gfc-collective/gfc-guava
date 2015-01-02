@@ -1,6 +1,6 @@
 package com.gilt.gfc.guava
 
-import com.google.common.base.{Optional, Predicate, Supplier, Function => GFunction}
+import com.google.common.base.{Optional, Predicate => GuavaPredicate, Supplier, Function => GFunction}
 
 /**
  * In spirit of scala.collection.JavaConverters.
@@ -37,12 +37,10 @@ object GuavaConverters {
   }
 
   implicit class ScalaPredicateConverter[T](val pred: T => Boolean) {
-    @inline def asJava: Predicate[T] = new Predicate[T] {
-      override def apply(input: T): Boolean = pred(input)
-    }
+    @inline def asJava: Predicate[T] = Predicate(pred)
   }
 
-  implicit class GuavaPredicateConverter[T](val pred: Predicate[T]) extends AnyVal {
-    @inline def asScala: T => Boolean = pred.apply
+  implicit class GuavaPredicateConverter[T](val pred: GuavaPredicate[T]) extends AnyVal {
+    @inline def asScala: Predicate[T] = Predicate(pred)
   }
 }

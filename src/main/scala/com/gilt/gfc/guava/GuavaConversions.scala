@@ -1,6 +1,6 @@
 package com.gilt.gfc.guava
 
-import com.google.common.base.{Optional, Predicate, Supplier, Function => GFunction}
+import com.google.common.base.{Optional, Predicate => GuavaPredicate, Supplier, Function => GFunction}
 
 /**
  * In spirit of scala.collection.JavaConversions.
@@ -39,14 +39,9 @@ object GuavaConversions {
 
   implicit def asScalaFunction0[R](s: Supplier[R]): (() => R) = { s.get _ }
 
-  implicit def asScalaPredicate[T](pred: Predicate[T]): T => Boolean = (t: T) => pred.apply(t)
+  implicit def asScalaPredicate[T](pred: GuavaPredicate[T]): Predicate[T] = Predicate(pred)
 
-  implicit def asJavaPredicate[T](pred: T => Boolean): Predicate[T] = new Predicate[T] {
-    def apply(input: T) = pred(input)
-  }
-
-  implicit def predicateToRichPredicate[T](predicate: Predicate[T]): RichPredicate[T] =
-    new RichPredicate[T](predicate)
+  implicit def asJavaPredicate[T](pred: T => Boolean): Predicate[T] = Predicate(pred)
 
   /**
    * Can't implicitly convert by-name params, so this method needs to be invoked
