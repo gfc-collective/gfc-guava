@@ -1,8 +1,8 @@
 package com.gilt.gfc.guava.concurrent
 
 import java.util.concurrent.ThreadFactory
+import com.gilt.gfc.concurrent.ThreadFactoryBuilder
 import com.gilt.gfc.logging.Loggable
-import com.google.common.util.concurrent.ThreadFactoryBuilder
 
 /**
  * Base thread factory that allows to create a set of thread with a common name, group and daemon properties.
@@ -10,6 +10,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder
  * This is mostly useful to identify background threads and make sure they do not prevent the jvm from shutting down
  * or for debugging/logging purposes to identify clearly what are the active threads.
  */
+@deprecated("Use ThreadFactoryBuilder and ThreadGroupBuilder in gfc-concurrent instead", "0.0.9")
 object NamedThreadFactory extends Loggable {
   /**
    * Called to create the thread group all threads are created in.
@@ -43,16 +44,13 @@ object NamedThreadFactory extends Loggable {
  * @param group the group where this thread will be added
  */
 class NamedThreadFactory(name: String, group: ThreadGroup, daemon: Boolean) extends ThreadFactory {
-  private val factory = new ThreadFactoryBuilder().
-    setNameFormat(name + "-%d").
-    setDaemon(daemon).
-    setPriority(group.getMaxPriority).
-    setUncaughtExceptionHandler(NamedThreadFactory.LogExceptionHandler).
-    setThreadFactory(new ThreadFactory {
-      def newThread(r: Runnable): Thread = {
-        new Thread(group, r)
-      }
-    }).build
+  private val factory = ThreadFactoryBuilder().
+    withNameFormat(name + "-%d").
+    withDaemonFlag(daemon).
+    withPriority(group.getMaxPriority).
+    withUncaughtExceptionHandler(NamedThreadFactory.LogExceptionHandler).
+    withThreadGroup(group)
+    .build()
 
   /**
    * Create a new factory with a given base name and thread group.
