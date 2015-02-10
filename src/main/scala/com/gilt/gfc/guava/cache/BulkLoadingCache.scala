@@ -12,14 +12,14 @@ import com.google.common.cache.{CacheLoader, CacheBuilder, LoadingCache}
 import org.slf4j.LoggerFactory
 
 /**
- * Wrapper for Guava's LoadingCache/CacheBuilder API, for a common use case in Gilt, which is to say a bulk
- * cache replacement strategy.  To use this, at a minimum you pass in a reload period in ms, which dictates how
- * often to reload the cache.  Note that this is the amount of time between the end of one reload operation, and
- * the next; this does not try to maintain a constant frequency.  You must also pass in a reloader method, which is
- * called to get an iterator of the key/value pairs to put in the cache.  Finally you may pass in an optional
- * CacheBuilder instance, which is used to actually create the cache, an onMiss function, which is called from
- * the Guava CacheLoader.load method to decide what to do when there is a cache miss (default behavior is a
- * RuntimeException); and an executor which is used to actually schedule cache reloads.
+ * Wrapper for Guava's LoadingCache/CacheBuilder API with a bulk cache load and replacement strategy.
+ * To use this, at a minimum you pass in a reload period in ms, which dictates how often to reload the cache.
+ * Note that this is the amount of time between the end of one reload operation, and the next; this does not try to
+ * maintain a constant frequency.  You must also pass in a reloader method, which is called to get an iterator of
+ * the key/value pairs to put in the cache.  Finally you may pass in an optional CacheBuilder instance, which is used
+ * to actually create the cache, an onMiss function, which is called from the Guava CacheLoader.load method to decide
+ * what to do when there is a cache miss (default behavior is a RuntimeException); and an executor which is used to
+ * actually schedule cache reloads.
  *
  * Note that caching, and Guava's caching, are hard topics. For example it is rarely a good idea to have a read-back
  * cache in Gilt's business model -- in general we never want to miss cache, which is what this implementation is
