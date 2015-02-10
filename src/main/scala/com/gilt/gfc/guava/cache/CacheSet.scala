@@ -11,6 +11,7 @@ import scala.collection.mutable
  *
  * {{{object AppCacheSet extends CacheSet}}}
  */
+@deprecated("Trivial code, unused in Gilt, surplus to requirements", "0.0.9")
 class CacheSet {
 
   private val _caches: mutable.Map[String,  Cache[_, _]] = mutable.Map()

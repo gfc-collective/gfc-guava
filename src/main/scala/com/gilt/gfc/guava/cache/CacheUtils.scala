@@ -7,6 +7,7 @@ import scala.collection.JavaConversions._
 /**
  * Utils for Guava Cache
  */
+@deprecated("Use BulkLoadingCache", "0.0.9")
 object CacheUtils {
 
   /** Refresh all keys in cache (the refresh happens asynchronously)

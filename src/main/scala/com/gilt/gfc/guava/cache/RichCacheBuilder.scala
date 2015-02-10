@@ -5,6 +5,7 @@ import com.google.common.cache.{ CacheBuilder, CacheLoader, LoadingCache }
 /**
  * Scala-friendly methods for Guava CacheBuilder
  */
+@deprecated("Use BulkLoadingCache", "0.0.9")
 class RichCacheBuilder[K0, V0](val self: CacheBuilder[K0, V0]) extends Proxy {
 
   /**

@@ -7,6 +7,7 @@ import com.google.common.cache.{ Cache, LoadingCache }
 /**
  * Scala-friendly methods for Guava Cache
  */
+@deprecated("Use BulkLoadingCache", "0.0.9")
 class RichCache[K, V, C <: Cache[K, V]](val self: C) extends Proxy {
 
   /**
@@ -19,6 +20,7 @@ class RichCache[K, V, C <: Cache[K, V]](val self: C) extends Proxy {
   }
 }
 
+@deprecated("Use BulkLoadingCache", "0.0.9")
 class RichLoadingCache[K, V](_self: LoadingCache[K, V])
   extends RichCache[K, V, LoadingCache[K, V]](_self)
 {

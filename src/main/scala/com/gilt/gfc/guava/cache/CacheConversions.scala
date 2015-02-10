@@ -5,6 +5,7 @@ import com.google.common.cache.{ Cache, CacheBuilder, LoadingCache }
 /**
  * Implicit conversions to/from Guava Cache & CacheBuilder
  */
+@deprecated("Use BulkLoadingCache", "0.0.9")
 object CacheConversions {
   import scala.language.implicitConversions
 

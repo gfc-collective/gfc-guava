@@ -6,7 +6,7 @@ import com.google.common.collect.Range
 import com.google.common.base.{Function, Optional}
 
 /**
- * Helper to convert Ranges to Option tuples (lower-bound, upper-bound) and vice-versa
+ * Helper to convert Ranges to Option tuples [lower-bound, upper-bound) and vice-versa
  *
  * @author Gregor Heine
  * @since 03/Dec/2013 18:30
