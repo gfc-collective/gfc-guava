@@ -1,10 +1,10 @@
 # gfc-guava
 
-A library that contains utility classes and scala adaptations for google guava. Part of the gilt foundation classes.
+A library that contains utility classes and scala adapters and adaptations for google guava. Part of the gilt foundation classes.
 
 ## Contents and Example Usage
 
-### com.gilt.gfc.guava.GuavaConverters / com.gilt.gfc.guava.GuavaConversions:
+### com.gilt.gfc.guava.GuavaConverters / GuavaConversions:
 These contain implicit and explicit functions to convert between 
 * ```com.google.common.base.Optional``` and ```scala.Option``` 
 * ```com.google.common.base.Function```, ```com.google.common.base.Supplier```, ```com.google.common.base.Predicate``` and the respective scala functions.
@@ -12,15 +12,47 @@ These contain implicit and explicit functions to convert between
 ```
     val foo: Option[String] = ???
     
-    // explicit conversion Option -> Optional
+    // Explicit conversion Option -> Optional
     import com.gilt.gfc.guava.GuavaConverters._
     val bar: Optional[String] = foo.asJava
     
-    // implicit conversion Optional -> Option
+    // Implicit conversion Optional -> Option
     import com.gilt.gfc.guava.GuavaConversions._
     val baz: Option[String] = bar
 ```
-
+```
+    // Have an Guava Function
+    val guavaFunction: Function[String, Int] = ???
+    
+    // Explicit conversion Function[String, Int] -> (String => Int)
+    import com.gilt.gfc.guava.GuavaConverters._
+    val scalaFunction: String => Int = guavaFunction.asScala
+    
+    // Implicit conversion (String => Int) -> Function[String, Int]
+    val guavaFunction2: Function[String, Int] = scalaFunction
+```
+```
+    // Have an Guava Function
+    val guavaSupplier: Supplier[String] = ???
+    
+    // Explicit conversion Supplier[String] -> (() => String)
+    import com.gilt.gfc.guava.GuavaConverters._
+    val scalaFunction: () => String = guavaSupplier.asScala
+    
+    // Implicit conversion (() => String) -> Supplier[String]
+    val guavaSupplier2: Supplier[String] = scalaFunction _
+```
+```
+    // Have an Guava Predicate
+    val guavaPredicate: Predicate[String] = ???
+    
+    // Explicit conversion Predicate[String] -> (String => Boolean)
+    import com.gilt.gfc.guava.GuavaConverters._
+    val scalaFunction: String => Boolean = guavaPredicate.asScala
+    
+    // Implicit conversion (String => Boolean) -> Predicate[String]
+    val guavaPredicate2: Predicate[String] = scalaFunction
+```
 ### com.gilt.gfc.guava.RangeHelper:
 Helper to convert between ```com.google.common.collect.Range``` and Option tuples [lower-bound, upper-bound):
 ```
@@ -137,9 +169,9 @@ A wrapper for Guava ListenableFuture providing monadic operations and higher-ord
 ```
     // Have a ListenableFuture
     val future: ListenableFuture[String] = ???
+    import com.gilt.gfc.guava.future.GuavaFutures._
     
     // Transform using map
-    import com.gilt.gfc.guava.future.GuavaFutures._
     val f2: ListenableFuture[Int] = future.map(s => s.length)
     
     // Transform using flatMap
@@ -150,7 +182,48 @@ A wrapper for Guava ListenableFuture providing monadic operations and higher-ord
     val f3: ListenableFuture[String] = future.filter(_.length > 0)
     
     // Foreach
+    def sideEffect(s:String): Unit = ???
+    val f4: ListenableFuture[Int] = future.foreach(sideEffect)
 ```
+* Higher order functions, similar to `scala.Future`
+```
+    // Have a ListenableFuture
+    val future: ListenableFuture[String] = ???
+    import com.gilt.gfc.guava.future.GuavaFutures._
+
+    // Handle exceptions that this future might contain
+    val safeFuture: ListenableFuture[String] = future.recover {
+      case ex: SomeException => "Failed"
+    }
+
+    // Asynchronously handle exceptions that this future might contain via a new future
+    def fallback(): ListenableFuture[String] = ???
+    val safeFuture: ListenableFuture[String] = future.recoverWith {
+      case ex: SomeException => fallback()
+    }
+    
+    // Create a new future by applying the 's' function to the successful result of
+    // the future, or the 'f' function to the failed result.
+    def success(s: String): Int = s.length
+    def failure(t: Throwable): Throwable = new SomeException(t)
+    val transformedFuture: ListenableFuture[Int] = future.transform(success, failure)
+```
+* Alternate "fallback" functions to handle failed futures:
+```
+    // Have a ListenableFuture
+    val future: ListenableFuture[String] = ???
+    import com.gilt.gfc.guava.future.GuavaFutures._
+
+    // Wrap the future value in a Try and instead of failing the future, fail the Try
+    val safeFuture1: ListenableFuture[Try[String]] = future.withTryFallback
+    
+    // Wrap the future value in an Option and instead of failing the future, return None
+    val safeFuture2: ListenableFuture[Option[String]] = future.withOptionFallback()
+    
+    // Provide a default value, if the future fails:
+    val safeFuture3: ListenableFuture[String] = future.withDefault("foo")
+```
+
 ## License
 Copyright 2014 Gilt Groupe, Inc.
 
