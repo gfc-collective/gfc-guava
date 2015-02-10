@@ -2,8 +2,8 @@ package com.gilt.gfc.guava.future
 
 import java.io.IOException
 import java.util.concurrent.{Executors, ExecutionException}
-import scala.collection.JavaConverters._
-import com.google.common.base.{Optional, Predicate, Predicates}
+import scala.util.{Failure, Success}
+import com.gilt.gfc.guava.Predicate
 import com.google.common.util.concurrent.{Futures, ListenableFuture}
 import org.scalatest.{Matchers, FunSuite}
 
@@ -133,6 +133,21 @@ class GuavaFuturesTest extends FunSuite with Matchers {
     }
   }
 
+  test("withTryFallback success") {
+    service1(9).withTryFallback.get match {
+      case Success(9) => /** good, expected */
+      case Success(wtf) => fail("Expected test value, got [%s]".format(wtf))
+      case Failure(_) => fail("Expected successful call")
+    }
+  }
+
+  test("withTryFallback failure") {
+    failedServiceCall().withTryFallback.get match {
+      case Success(_) => fail("Expected call to fail")
+      case Failure(t) => t.getMessage should equal("Failed Service Call")
+    }
+  }
+
   test("withOptionFallback success") {
     service1(9).withOptionFallback { _: Throwable =>
       fail("Don't expect error callback to be executed during successful call")
@@ -175,36 +190,36 @@ class GuavaFuturesTest extends FunSuite with Matchers {
   }
 
   test("firstCompletedOf must return back a deferred None on empty list of futures") {
-    GuavaFutures.firstCompletedOf[String](List.empty[ListenableFuture[String]].asJava).get should equal(Optional.absent[String])
+    GuavaFutures.firstCompletedOf[String](List.empty[ListenableFuture[String]]).get should equal(None)
   }
 
   test("find must return back a deferred None on empty list of futures") {
-    GuavaFutures.find[String](List.empty[ListenableFuture[String]].asJava, Predicates.alwaysTrue[String]).get should equal(Optional.absent[String])
+    GuavaFutures.find[String](List.empty[ListenableFuture[String]])(Predicate.alwaysTrue[String]).get should equal(None)
   }
 
   test("firstCompletedOf must return the only future passed in") {
     val f1 = service3(10, 100)
-    GuavaFutures.firstCompletedOf(List(f1).asJava).get should equal (Optional.of(10))
+    GuavaFutures.firstCompletedOf(List(f1)).get should equal (Some(10))
   }
 
   test("find must return the only matching future passed in") {
     val f1 = service3(10, 100)
-    GuavaFutures.find(List(f1).asJava, MustBePositive).get should equal (Optional.of(10))
+    GuavaFutures.find(List(f1))(MustBePositive).get should equal (Some(10))
   }
 
   test("find must return None if the only future passed in is not matching") {
     val f1 = service3(-10, 100)
-    GuavaFutures.find(List(f1).asJava, MustBePositive).get should equal (Optional.absent[Int])
+    GuavaFutures.find(List(f1))(MustBePositive).get should equal (None)
   }
 
   test("firstCompletedOf must return None if the only future passed is failing") {
     val f1 = failedServiceCall(100L)
-    GuavaFutures.firstCompletedOf(List(f1).asJava).get should equal (Optional.absent[Int])
+    GuavaFutures.firstCompletedOf(List(f1)).get should equal (None)
   }
 
   test("find must return None if the only future passed is failing") {
     val f1 = failedServiceCall()
-    GuavaFutures.find(List(f1).asJava, MustBePositive).get should equal (Optional.absent[Int])
+    GuavaFutures.find(List(f1))(MustBePositive).get should equal (None)
   }
 
   test("firstCompletedOf must return the first future that completes successfully and discard the other one") {
@@ -215,7 +230,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
     val f5 = service3(40, 4000)
     val f6 = failedServiceCall(100L)
 
-    GuavaFutures.firstCompletedOf(List(f1, f2, f3, f4, f5, f6).asJava).get should equal (Optional.of(10))
+    GuavaFutures.firstCompletedOf(List(f1, f2, f3, f4, f5, f6)).get should equal (Some(10))
 
     val now = System.currentTimeMillis
     val f10 = failedServiceCall(100L)
@@ -224,7 +239,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
     val f13 = failedServiceCall(100L)
     val f14 = service3(30, 3000)
 
-    GuavaFutures.firstCompletedOf(List(f10, f11, f12, f13, f14).asJava).get should equal (Optional.of(30))
+    GuavaFutures.firstCompletedOf(List(f10, f11, f12, f13, f14)).get should equal (Some(30))
     val elapsed: Long = (System.currentTimeMillis - now)
     (elapsed < 3900) should be (true)
   }
@@ -235,7 +250,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
     val f3 = service3(30, 3000)
     val f4 = service3(-40, 4000)
 
-    GuavaFutures.find(List(f1, f2, f3, f4).asJava, MustBePositive).get should equal (Optional.of(30))
+    GuavaFutures.find(List(f1, f2, f3, f4))(MustBePositive).get should equal (Some(30))
   }
 
   test("find must return None if all the futures are not matching the predicate") {
@@ -244,7 +259,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
     val f3 = service3(-30, 3000)
     val f4 = service3(-40, 4000)
 
-    GuavaFutures.find(List(f1, f2, f3, f4).asJava, MustBePositive).get should equal (Optional.absent[Int])
+    GuavaFutures.find(List(f1, f2, f3, f4))(MustBePositive).get should equal (None)
   }
 
   test("find must return None if all the futures are failing except one but it still does not matches the predicate") {
@@ -253,7 +268,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
     val f3 = service3(-30, 100)
     val f4 = failedServiceCall(100L)
 
-    GuavaFutures.find(List(f1, f2, f3, f4).asJava, MustBePositive).get should equal (Optional.absent[Int])
+    GuavaFutures.find(List(f1, f2, f3, f4))(MustBePositive).get should equal (None)
   }
 
   test("find must return the fastest future that comes back and matches the predicate") {
@@ -263,7 +278,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
     val f3 = service3(30, 3000)
     val f4 = service3(40, 4000)
 
-    GuavaFutures.find(List(f1, f2, f3, f4).asJava, MustBePositive).get should equal (Optional.of(10))
+    GuavaFutures.find(List(f1, f2, f3, f4))(MustBePositive).get should equal (Some(10))
     val elapsed = (System.currentTimeMillis - now)
     (elapsed < 900) should be (true)
   }
@@ -272,7 +287,7 @@ class GuavaFuturesTest extends FunSuite with Matchers {
     val f1 = failedServiceCall(100L)
     val f2 = failedServiceCall(100L)
 
-    GuavaFutures.firstCompletedOf(List(f1, f2).asJava).get should equal (Optional.absent[Int])
+    GuavaFutures.firstCompletedOf(List(f1, f2)).get should equal (None)
   }
 
   test("recover must return the original future if it succeeds") {

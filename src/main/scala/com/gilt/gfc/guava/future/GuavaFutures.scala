@@ -1,12 +1,12 @@
 package com.gilt.gfc.guava.future
 
 import java.lang.{ Runnable => JRunnable }
-import java.util.{ Collection => JCollection }
 import java.util.concurrent.{Callable, ExecutorService}
 import java.util.concurrent.atomic.AtomicInteger
+import scala.util.{Success, Failure, Try}
 import scala.util.control.Exception
 import com.gilt.gfc.logging.OpenLoggable
-import com.google.common.base.{ Function => GFunction, Predicate => GPredicate, Optional }
+import com.google.common.base.{ Function => GFunction}
 import com.google.common.util.concurrent.{ JdkFutureAdapters, Futures, MoreExecutors, ListenableFuture, FutureFallback, SettableFuture => GSettableFuture }
 
 /**
@@ -52,34 +52,27 @@ object GuavaFutures {
    * Returns the first succeeded future from the given collection discarding the others.
    *
    * @param futures a collection of futures housing a result of type T
-   * @return a future holding an optional T that is the first succeded future from the passed iterable or None if
-   * no future completed succesfully.
+   * @return a future holding an optional T that is the first succeeded future from the passed iterable or None if
+   * no future completed successfully.
    */
-  def firstCompletedOf[T](futures: JCollection[ListenableFuture[T]]): ListenableFuture[Optional[T]] = firstCompletedAndMatchingOf(futures) { t: T => true }
+  def firstCompletedOf[T](futures: Iterable[ListenableFuture[T]]): ListenableFuture[Option[T]] = find(futures)(_  => true)
 
   /**
-   * Returns the first succedding future that matches the predicate.
+   * Returns the first succeeding future that matches the predicate.
    *
    * @param futures a collection of futures.
    * @param predicate the predicate that has to be matched from the result of the futures.
    * @return a future of an optional T that is the result of the first succeding future that also matches the predicate
    * or None otherwise.
    */
-  def find[T](futures: JCollection[ListenableFuture[T]], predicate: GPredicate[T]): ListenableFuture[Optional[T]] =
-    firstCompletedAndMatchingOf(futures) { t: T => predicate.apply(t) }
-
-  private def firstCompletedAndMatchingOf[T](futures: JCollection[ListenableFuture[T]])(predicate: T => Boolean): ListenableFuture[Optional[T]] = {
-    import scala.collection.JavaConverters._
-
-    val futuresToWaitFor = futures.asScala.toList
-
-    if (futuresToWaitFor.isEmpty) {
-      Futures.immediateFuture(Optional.absent[T])
+  def find[T](futures: Iterable[ListenableFuture[T]])(predicate: T => Boolean): ListenableFuture[Option[T]] = {
+    if (futures.isEmpty) {
+      Futures.immediateFuture(None)
     } else {
-      val promise: GSettableFuture[Optional[T]] = GSettableFuture.create[Optional[T]]
+      val promise = GSettableFuture.create[Option[T]]
       val failedFuturesSoFar = new AtomicInteger(0)
 
-      futuresToWaitFor.foreach { f =>
+      futures.foreach { f =>
         f.addListener(new JRunnable() {
           override def run() {
             val result: Option[T] = Exception.catching(classOf[Exception]).withApply { t: Throwable =>
@@ -94,17 +87,17 @@ object GuavaFutures {
 
             // All the following code assumes that only the first set on
             // the SettableFuture sets it (as per Guava's javadoc).
-            if (result.isDefined && promise.set(Optional.of(result.get))) { // only the first set will succeed
-              futuresToWaitFor.foreach { f: java.util.concurrent.Future[T] =>
+            if (result.isDefined && promise.set(Some(result.get))) { // only the first set will succeed
+              futures.foreach { f: java.util.concurrent.Future[T] =>
                 f.cancel(false)
               }
             } else {
-              if (failedFuturesSoFar.incrementAndGet() == futuresToWaitFor.size) {
-                promise.set(Optional.absent[T]) // all the futures failed (errors or not matching the predicate): returning None
+              if (failedFuturesSoFar.incrementAndGet() == futures.size) {
+                promise.set(None) // all the futures failed (errors or not matching the predicate): returning None
               }
             }
           }
-        }, MoreExecutors.sameThreadExecutor())
+        }, MoreExecutors.directExecutor())
       }
 
       promise
@@ -151,6 +144,7 @@ case class RichListenableFuture[T](future: ListenableFuture[T]) {
    * with Left[Throwable] representing cases where an exception was
    * caught and Right[T] representing desired results.
    */
+  @deprecated("Use withTryFallback", "0.1.0")
   def withEitherFallback: ListenableFuture[Either[Throwable, T]] = {
     val fallBackToLeft = newFallBack(t => Futures.immediateFuture(Left(t)))
     Futures.withFallback(map(Right(_)), fallBackToLeft)
@@ -158,8 +152,19 @@ case class RichListenableFuture[T](future: ListenableFuture[T]) {
 
   /**
    * Helper method to guard against RPC failures and the like,
+   * converts a 'regular' Future to a Future of Try
+   * with Failure representing cases where an exception was
+   * caught and Success[T] representing desired results.
+   */
+  def withTryFallback: ListenableFuture[Try[T]] = {
+    val fallBackToLeft = newFallBack(t => Futures.immediateFuture(Failure(t)))
+    Futures.withFallback(map(Success(_)), fallBackToLeft)
+  }
+
+  /**
+   * Helper method to guard against RPC failures and the like,
    * converts a 'regular' Future to a Future of Option.
-   * Variation of withEitherFallback method where None represents
+   * Variation of withTryFallback method where None represents
    * an error (exception was thrown) case and Some[T] represents
    * an Ok case.
    *
