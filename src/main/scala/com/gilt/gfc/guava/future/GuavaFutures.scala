@@ -107,6 +107,7 @@ object GuavaFutures {
 
 private object RichListenableFuture extends OpenLoggable
 
+@deprecated("Convert a ListenableFuture to a Scala Future instead", "0.1.2")
 case class RichListenableFuture[T](future: ListenableFuture[T]) {
 
   import RichListenableFuture._
