@@ -1,4 +1,5 @@
-# gfc-guava
+# gfc-guava [![Build Status](https://travis-ci.org/gilt/gfc-guava.svg?branch=master)](https://travis-ci.org/gilt/gfc-guava) [![Coverage Status](https://coveralls.io/repos/gilt/gfc-guava/badge.svg?branch=master&service=github)](https://coveralls.io/github/gilt/gfc-guava?branch=master)
+
 
 A library that contains utility classes and scala adapters and adaptations for google guava. Part of the gilt foundation classes.
 
