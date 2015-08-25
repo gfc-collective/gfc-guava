@@ -2,24 +2,22 @@ name := "gfc-guava"
 
 organization := "com.gilt"
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.7"
 
-crossScalaVersions := Seq("2.11.6", "2.10.5")
+crossScalaVersions := Seq("2.11.7", "2.10.5")
 
 libraryDependencies ++= Seq(
-  "com.gilt" %% "gfc-util" % "0.0.6",
+  "com.gilt" %% "gfc-util" % "0.1.0",
   "com.gilt" %% "gfc-concurrent" % "0.0.5",
   "com.google.guava" % "guava" % "18.0",
   "com.google.code.findbugs" % "jsr305" % "3.0.0",
-  "org.scalatest" %% "scalatest" % "2.2.4" % "test",
+  "org.scalatest" %% "scalatest" % "2.2.5" % "test",
   "org.mockito" % "mockito-core" % "1.10.19" % "test"
 )
 
-releaseSettings
+releaseCrossBuild := true
 
-ReleaseKeys.crossBuild := true
-
-ReleaseKeys.publishArtifactsAction := PgpKeys.publishSigned.value
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
 
 publishMavenStyle := true
 
