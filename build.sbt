@@ -7,8 +7,8 @@ scalaVersion := "2.11.7"
 crossScalaVersions := Seq("2.11.7", "2.10.6")
 
 libraryDependencies ++= Seq(
-  "com.gilt" %% "gfc-util" % "0.1.3",
-  "com.gilt" %% "gfc-concurrent" % "0.2.0",
+  "com.gilt" %% "gfc-util" % "0.1.5",
+  "com.gilt" %% "gfc-concurrent" % "0.3.3",
   "com.google.guava" % "guava" % "19.0",
   "com.google.code.findbugs" % "jsr305" % "3.0.1",
   "org.scalatest" %% "scalatest" % "2.2.5" % "test",
