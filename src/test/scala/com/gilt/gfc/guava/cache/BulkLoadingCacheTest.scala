@@ -58,9 +58,9 @@ class BulkLoadingCacheTest extends FunSuite with Matchers with MockitoSugar {
       cache.get(i.toString) should equal(2.toString)
     }
 
-    evaluating {
+    a [RuntimeException] should be thrownBy {
       cache.get("not ")
-    } should produce[RuntimeException]
+    }
   }
 
   test("Null Miss Is Miss") {
