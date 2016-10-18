@@ -3,6 +3,19 @@
 
 A library that contains utility classes and scala adapters and adaptations for google guava. Part of the gilt foundation classes.
 
+## Getting gfc-guava
+
+The latest version is 0.2.3, which is cross-built against Scala 2.10.x, 2.11.x and 2.12.0-RC1.
+
+If you're using SBT, add the following line to your build file:
+
+```scala
+libraryDependencies += "com.gilt" %% "gfc-guava" % "0.2.3"
+```
+
+For Maven and other build tools, you can visit [search.maven.org](http://search.maven.org/#search%7Cga%7C1%7Ccom.gilt%20gfc).
+(This search will also list other available libraries from the gilt fundation classes.)
+
 ## Contents and Example Usage
 
 ### com.gilt.gfc.guava.GuavaConverters / GuavaConversions:
