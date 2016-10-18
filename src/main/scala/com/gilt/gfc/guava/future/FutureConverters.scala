@@ -4,7 +4,7 @@ import java.util.concurrent.{ExecutionException, Executor, TimeUnit}
 import scala.concurrent.{Await, Promise, CanAwait, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
 import com.gilt.gfc.util.Throwables
 import com.google.common.util.concurrent.{ListenableFuture, CheckedFuture, AbstractCheckedFuture, MoreExecutors}
 
@@ -53,7 +53,7 @@ object FutureConverters {
           }
         }
       }
-      guavaFuture.addListener(callbackListener, MoreExecutors.sameThreadExecutor())
+      guavaFuture.addListener(callbackListener, MoreExecutors.directExecutor())
       promise.future
     }
 
@@ -64,6 +64,29 @@ object FutureConverters {
     override def ready(atMost: Duration)(implicit permit: CanAwait): ListenableFutureAdapter.this.type = {
       delegate.ready(atMost)(permit)
       this
+    }
+
+    def transform[S](f: Try[T] => Try[S])(implicit executor: ExecutionContext): Future[S] = {
+      val promise: Promise[S] = Promise()
+      delegate.onComplete { t =>
+        Try(f(t)) match {
+          case Success(s) => promise.tryComplete(s)
+          case Failure(f) => promise.tryFailure(f)
+        }
+
+      }
+      promise.future
+    }
+
+    def transformWith[S](f: Try[T] => Future[S])(implicit executor: ExecutionContext): Future[S] = {
+      val promise: Promise[S] = Promise()
+      delegate.onComplete { t =>
+        Try(f(t)) match {
+          case Success(s) => s.onComplete(promise.tryComplete(_))
+          case Failure(f) => promise.tryFailure(f)
+        }
+      }
+      promise.future
     }
   }
 

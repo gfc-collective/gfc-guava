@@ -56,9 +56,9 @@ object Predicate {
     override def apply(t: T): Boolean = !p(t)
   }
 
-  val True: Predicate[Any] = Predicate(_ => true)
+  val True: Predicate[Any] = Predicate((_: Any) => true)
   def alwaysTrue[T <: Any]: Predicate[T] = True.asInstanceOf[Predicate[T]]
 
-  val False: Predicate[Any] = Predicate(_ => false)
+  val False: Predicate[Any] = Predicate((_: Any) => false)
   def alwaysFalse[T]: Predicate[T] = False.asInstanceOf[Predicate[T]]
 }
