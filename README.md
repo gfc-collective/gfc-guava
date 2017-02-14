@@ -5,7 +5,7 @@ A library that contains utility classes and scala adapters and adaptations for g
 
 ## Getting gfc-guava
 
-The latest version is 0.2.5, which is cross-built against Scala 2.10.x, 2.11.x and 2.12.x.
+The latest version is 0.2.5, which is cross-built against Scala 2.11.x and 2.12.x.
 
 If you're using SBT, add the following line to your build file:
 
