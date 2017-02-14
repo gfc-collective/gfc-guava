@@ -6,7 +6,7 @@ import java.util.concurrent.{Callable, ScheduledExecutorService, TimeUnit, Execu
 import java.util.concurrent.atomic.AtomicReference
 import scala.collection.JavaConverters._
 import com.gilt.gfc.guava.GuavaConverters._
-import com.gilt.gfc.guava.concurrent.NamedThreadFactory
+import com.gilt.gfc.concurrent.ThreadFactoryBuilder
 import com.google.common.base.{Supplier, Function => GFunction}
 import com.google.common.cache.{CacheLoader, CacheBuilder, LoadingCache}
 import org.slf4j.LoggerFactory
@@ -39,7 +39,7 @@ trait ManuallyReloadableCache[K, V] extends LoadingCache[K, V] {
 }
 
 object BulkLoadingCache {
-  private lazy val defaultExecutor: ScheduledExecutorService = Executors.newScheduledThreadPool(1, new NamedThreadFactory("BulkLoadingCache", true))
+  private lazy val defaultExecutor: ScheduledExecutorService = Executors.newScheduledThreadPool(1, ThreadFactoryBuilder().withNameFormat("BulkLoadingCache-%s").withDaemonFlag(true).build())
 
   def apply[K, V](reloadPeriodMs: Long,
                   loadAll: () => Iterator[(K, V)],
