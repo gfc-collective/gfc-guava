@@ -71,7 +71,7 @@ pomExtra := (
     </developer>
     <developer>
       <id>sullis</id>
-      <name>Sean Sulllivan</name>
+      <name>Sean Sullivan</name>
       <url>https://github.com/sullis</url>
     </developer>
   </developers>
