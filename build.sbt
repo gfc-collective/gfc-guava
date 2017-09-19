@@ -1,5 +1,4 @@
 import scoverage.ScoverageKeys
-import org.scoverage.coveralls.Imports.CoverallsKeys
 
 name := "gfc-guava"
 
@@ -23,8 +22,6 @@ libraryDependencies ++= Seq(
 )
 
 ScoverageKeys.coverageMinimum := 64.1
-
-CoverallsKeys.coverallsFailBuildOnError := false
 
 releaseCrossBuild := true
 
