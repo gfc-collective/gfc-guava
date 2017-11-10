@@ -4,9 +4,9 @@ name := "gfc-guava"
 
 organization := "com.gilt"
 
-scalaVersion := "2.11.11"
+scalaVersion := "2.12.4"
 
-crossScalaVersions := Seq(scalaVersion.value, "2.12.4", "2.10.6")
+crossScalaVersions := Seq(scalaVersion.value, "2.11.11", "2.10.6")
 
 scalacOptions += "-target:jvm-1.7"
 
@@ -14,10 +14,10 @@ javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
 
 libraryDependencies ++= Seq(
   "com.gilt" %% "gfc-util" % "0.1.7",
-  "com.gilt" %% "gfc-concurrent" % "0.3.5",
-  "com.google.guava" % "guava" % "21.0",
-  "com.google.code.findbugs" % "jsr305" % "3.0.1",
-  "org.scalatest" %% "scalatest" % "3.0.3" % "test",
+  "com.gilt" %% "gfc-concurrent" % "0.3.6",
+  "com.google.guava" % "guava" % "23.4-jre",
+  "com.google.code.findbugs" % "jsr305" % "3.0.2",
+  "org.scalatest" %% "scalatest" % "3.0.4" % "test",
   "org.mockito" % "mockito-core" % "1.10.19" % "test"
 )
 
