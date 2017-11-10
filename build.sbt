@@ -17,8 +17,8 @@ libraryDependencies ++= Seq(
   "com.gilt" %% "gfc-concurrent" % "0.3.6",
   "com.google.guava" % "guava" % "23.4-jre",
   "com.google.code.findbugs" % "jsr305" % "3.0.2",
-  "org.scalatest" %% "scalatest" % "3.0.4" % "test",
-  "org.mockito" % "mockito-core" % "1.10.19" % "test"
+  "org.scalatest" %% "scalatest" % "3.0.4" % Test,
+  "org.mockito" % "mockito-core" % "1.10.19" % Test
 )
 
 ScoverageKeys.coverageMinimum := 64.1
