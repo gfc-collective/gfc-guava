@@ -6,11 +6,11 @@ organization := "com.gilt"
 
 scalaVersion := "2.12.4"
 
-crossScalaVersions := Seq(scalaVersion.value, "2.11.11")
+crossScalaVersions := Seq(scalaVersion.value, "2.11.11", "2.10.6")
 
-scalacOptions += "-target:jvm-1.8"
+scalacOptions += "-target:jvm-1.7"
 
-javacOptions ++= Seq("-source", "1.8", "-target", "1.8")
+javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
 
 libraryDependencies ++= Seq(
   "com.gilt" %% "gfc-util" % "0.2.1",
