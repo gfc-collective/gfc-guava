@@ -13,7 +13,7 @@ scalacOptions += "-target:jvm-1.7"
 javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
 
 libraryDependencies ++= Seq(
-  "com.gilt" %% "gfc-util" % "0.2.1",
+  "com.gilt" %% "gfc-util" % "0.2.2",
   "com.gilt" %% "gfc-concurrent" % "0.3.7",
   "com.google.guava" % "guava" % "24.1.1-jre",
   "com.google.code.findbugs" % "jsr305" % "3.0.2",
