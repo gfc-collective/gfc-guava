@@ -6,7 +6,7 @@ import java.util.concurrent.{ExecutionException, TimeUnit, Executor}
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import com.google.common.util.concurrent.{ListenableFuture, Futures}
-import org.mockito.Matchers.{any, eq => matchEq}
+import org.mockito.ArgumentMatchers.{any, eq => matchEq}
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{Matchers, FunSuite}

@@ -4,7 +4,7 @@ import java.lang.{Integer => JInt}
 import java.util.concurrent.{TimeUnit, ScheduledExecutorService}
 import com.google.common.cache.CacheBuilder
 import org.mockito.Mockito._
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
 import org.scalatest.{Matchers, FunSuite}
