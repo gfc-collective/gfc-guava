@@ -40,38 +40,6 @@ class FutureConvertersTest extends FunSuite with Matchers with MockitoSugar {
     thrown.getCause shouldBe exc
   }
 
-  test("ScalaFuture to CheckedFuture returns the original value") {
-    val future = Future.successful(1)
-    future.asCheckedFuture.checkedGet() shouldBe 1
-  }
-
-  test("ScalaFuture to CheckedFuture throws the original exception") {
-    val exc = new SomeException()
-    val future = Future.failed(exc)
-
-    val thrownChecked = the[SomeException] thrownBy {
-      future.asCheckedFuture.checkedGet()
-    }
-    thrownChecked shouldBe exc
-
-    val thrown = the[ExecutionException] thrownBy {
-      future.asListenableFuture.get()
-    }
-    thrown.getCause shouldBe exc
-  }
-
-  test("ScalaFuture to CheckedFuture unwraps the original exception") {
-    val exc1 = new SomeException("foo")
-    val exc2 = new Exception("bar", exc1)
-    val future = Future.failed(exc2)
-
-    implicit def mapper(ex: Exception): SomeException = new SomeException("baz", ex)
-    val thrown = the[SomeException] thrownBy {
-      future.asCheckedFuture[SomeException].checkedGet()
-    }
-    thrown shouldBe exc1
-  }
-
   test("ListenableFuture to ScalaFuture returns the original value") {
     val future = Futures.immediateFuture(1)
     future.asScala.await shouldBe 1
@@ -92,21 +60,9 @@ class FutureConvertersTest extends FunSuite with Matchers with MockitoSugar {
     future.asListenableFuture.asScala should be theSameInstanceAs future
   }
 
-  test("ScalaFuture to CheckedFuture to ScalaFuture returns original ScalaFuture") {
-    val future = Future.successful(1)
-    future.asCheckedFuture.asScala should be theSameInstanceAs future
-  }
-
   test("ListenableFuture to ScalaFuture to ListenableFuture returns original ListenableFuture") {
     val future = Futures.immediateFuture(1)
     future.asScala.asListenableFuture should be theSameInstanceAs future
-  }
-
-  test("ListenableFuture to ScalaFuture to CheckedFuture returns wrapped original ListenableFuture") {
-    val future = Futures.immediateFuture(1)
-    val checkedFuture = future.asScala.asCheckedFuture
-    checkedFuture shouldBe a [MappingCheckedFuture[_, _]]
-    checkedFuture.asInstanceOf[MappingCheckedFuture[Int, Exception]].wrapped should be theSameInstanceAs future
   }
 
   test("ScalaFutureAdapter functions") {

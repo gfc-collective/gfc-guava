@@ -6,7 +6,7 @@ import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 import scala.util.{Try, Success, Failure}
 import com.gilt.gfc.util.Throwables
-import com.google.common.util.concurrent.{ListenableFuture, CheckedFuture, AbstractCheckedFuture, MoreExecutors}
+import com.google.common.util.concurrent.{ListenableFuture, MoreExecutors}
 
 /**
  * Implicit converters between Scala Future and Guava (Listenable/Checked)Future
@@ -18,7 +18,6 @@ object FutureConverters {
   implicit class GuavaFutureConverter[T](val guavaFuture: ListenableFuture[T]) extends AnyVal {
     def asScala: Future[T] = {
       guavaFuture match {
-        case MappingCheckedFuture(ScalaFutureAdapter(f), _, _) => f
         case ScalaFutureAdapter(f) => f
         case _ => ListenableFutureAdapter(guavaFuture)
       }
@@ -33,9 +32,6 @@ object FutureConverters {
       }
     }
 
-    def asCheckedFuture[X <: Exception](implicit exceptionMapper: Exception => X, tag: ClassTag[X]): CheckedFuture[T, X] = {
-      new MappingCheckedFuture(asListenableFuture, exceptionMapper, tag)
-    }
   }
 
   case class ListenableFutureAdapter[T](guavaFuture: ListenableFuture[T]) extends Future[T] {
@@ -105,27 +101,4 @@ object FutureConverters {
     }
   }
 
-  case class MappingCheckedFuture[T, X <: Exception](wrapped: ListenableFuture[T], exceptionMapper: Exception => X, tag: ClassTag[X]) extends AbstractCheckedFuture[T, X](wrapped) {
-    override def mapException(exc: Exception): X = {
-      val rootExc = Throwables.rootCause(exc)
-      if (tag.runtimeClass.isAssignableFrom(rootExc.getClass)) {
-        rootExc.asInstanceOf[X]
-      } else {
-        exceptionMapper(exc)
-      }
-    }
-
-    override def checkedGet(): T = try {
-      delegate.get()
-    } catch {
-      case ex: Exception => throw mapException(ex)
-    }
-
-
-    override def checkedGet(timeout: Long, unit: TimeUnit): T = try {
-      delegate.get(timeout, unit)
-    } catch {
-      case ex: Exception => throw mapException(ex)
-    }
-  }
 }
