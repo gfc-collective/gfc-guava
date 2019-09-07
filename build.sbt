@@ -14,7 +14,7 @@ javacOptions ++= Seq("-source", "1.8", "-target", "1.8")
 
 libraryDependencies ++= Seq(
   "com.gilt" %% "gfc-util" % "0.2.2",
-  "com.gilt" %% "gfc-concurrent" % "0.3.7",
+  "com.gilt" %% "gfc-concurrent" % "0.3.8",
   "com.google.guava" % "guava" % "28.0-jre",
   "com.google.code.findbugs" % "jsr305" % "3.0.2",
   "org.scalatest" %% "scalatest" % "3.0.7" % Test,
