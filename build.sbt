@@ -41,14 +41,14 @@ publishArtifact in Test := false
 
 pomIncludeRepository := { _ => false }
 
-licenses := Seq("Apache-style" -> url("https://raw.githubusercontent.com/gilt/gfc-guava/master/LICENSE"))
+licenses := Seq("Apache-style" -> url("https://raw.githubusercontent.com/gfc-collective/gfc-guava/master/LICENSE"))
 
-homepage := Some(url("https://github.com/gilt/gfc-guava"))
+homepage := Some(url("https://github.com/gfc-collective/gfc-guava"))
 
 pomExtra := (
   <scm>
-    <url>https://github.com/gilt/gfc-guava.git</url>
-    <connection>scm:git:git@github.com:gilt/gfc-guava.git</connection>
+    <url>https://github.com/gfc-collective/gfc-guava.git</url>
+    <connection>scm:git:git@github.com:gfc-collective/gfc-guava.git</connection>
   </scm>
   <developers>
     <developer>
@@ -73,4 +73,3 @@ pomExtra := (
     </developer>
   </developers>
 )
-
