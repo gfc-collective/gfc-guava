@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
   "com.gilt" %% "gfc-concurrent" % "0.3.8",
   "com.google.guava" % "guava" % "28.1-jre",
   "com.google.code.findbugs" % "jsr305" % "3.0.2",
-  "org.scalatest" %% "scalatest" % "3.0.8" % Test,
+  "org.scalatest" %% "scalatest" % "3.1.0" % Test,
   "org.mockito" % "mockito-core" % "3.1.0" % Test
 )
 

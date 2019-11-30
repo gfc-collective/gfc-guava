@@ -9,7 +9,8 @@ import com.google.common.util.concurrent.{ListenableFuture, Futures}
 import org.mockito.ArgumentMatchers.{any, eq => matchEq}
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 object FutureConvertersTest {
   implicit class AwaitableFuture[A](val f: Future[A]) extends AnyVal {
@@ -17,7 +18,7 @@ object FutureConvertersTest {
   }
 }
 
-class FutureConvertersTest extends FunSuite with Matchers with MockitoSugar {
+class FutureConvertersTest extends AnyFunSuite with Matchers with MockitoSugar {
   import FutureConverters._
   import FutureConvertersTest._
   import scala.concurrent.ExecutionContext.Implicits.global

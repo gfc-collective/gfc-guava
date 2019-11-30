@@ -1,12 +1,13 @@
 package com.gilt.gfc.guava
 
 import com.google.common.base.{Optional, Supplier, Function => GFunction}
-import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 /**
  * Unit tests for GuavaConverters/GuavaConversions.
  */
-class GuavaConversionsTest extends FunSuite with Matchers {
+class GuavaConversionsTest extends AnyFunSuite with Matchers {
 
   val predJava = new Predicate[String] { def apply(s: String) = s.length > 0 }
   val predScala = (s: String) => s.length > 0
