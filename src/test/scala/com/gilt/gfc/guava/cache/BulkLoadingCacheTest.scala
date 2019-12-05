@@ -7,8 +7,9 @@ import org.mockito.Mockito._
 import org.mockito.ArgumentMatchers._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
-import org.scalatest.{Matchers, FunSuite}
 import org.scalatest.mock.MockitoSugar
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 /**
  * Basic sanity tests of BulkLoadingCache.
@@ -32,7 +33,7 @@ class RunnableCapturingScheduledExecutorMock extends MockitoSugar {
   }).when(executor).scheduleWithFixedDelay(any[Runnable], anyLong, anyLong, any[TimeUnit])
 }
 
-class BulkLoadingCacheTest extends FunSuite with Matchers with MockitoSugar {
+class BulkLoadingCacheTest extends AnyFunSuite with Matchers with MockitoSugar {
 
   val immediateExecutor = new RunnableCapturingScheduledExecutorMock
   test("Basics") {

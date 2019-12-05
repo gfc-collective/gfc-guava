@@ -1,9 +1,10 @@
 package com.gilt.gfc.guava
 
 import com.google.common.base.{Predicate => GPredicate}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class PredicateTest extends FunSpec with Matchers {
+class PredicateTest extends AnyFunSpec with Matchers {
 
   describe("Predicate Functions") {
     val True: Predicate[String] = Predicate.alwaysTrue
