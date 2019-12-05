@@ -3,7 +3,8 @@ package com.gilt.gfc.guava.future
 import java.util.concurrent.Executors
 import com.gilt.gfc.guava.Predicate
 import com.google.common.util.concurrent.{Futures, ListenableFuture}
-import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 /**
  * Tests the basics of the Future monad wrapper for Guava futures.
@@ -11,7 +12,7 @@ import org.scalatest.{Matchers, FunSuite}
  * @author Eric Bowman
  * @since 11/22/12 1:50 PM
  */
-class GuavaFuturesTest extends FunSuite with Matchers {
+class GuavaFuturesTest extends AnyFunSuite with Matchers {
 
   // pull in the implicit magic so Guava's ListenableFuture presents a monadic interface
 
