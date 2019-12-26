@@ -18,7 +18,7 @@ libraryDependencies ++= Seq(
   "com.google.guava" % "guava" % "28.1-jre",
   "com.google.code.findbugs" % "jsr305" % "3.0.2",
   "org.scalatest" %% "scalatest" % "3.1.0" % Test,
-  "org.mockito" % "mockito-core" % "3.2.0" % Test
+  "org.mockito" % "mockito-core" % "3.2.4" % Test
 )
 
 ScoverageKeys.coverageMinimum := 64.1
