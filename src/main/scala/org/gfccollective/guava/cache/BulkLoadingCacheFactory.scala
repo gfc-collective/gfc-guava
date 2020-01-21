@@ -1,4 +1,4 @@
-package com.gilt.gfc.guava.cache
+package org.gfccollective.guava.cache
 
 import java.util.{Map => JMap}
 import java.util.concurrent.ScheduledExecutorService

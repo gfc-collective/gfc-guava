@@ -1,4 +1,4 @@
-package com.gilt.gfc.guava
+package org.gfccollective.guava
 
 import com.google.common.base.{Optional, Supplier, Function => GFunction}
 import org.scalatest.funsuite.AnyFunSuite

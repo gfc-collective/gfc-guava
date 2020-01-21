@@ -1,7 +1,7 @@
-package com.gilt.gfc.guava.future
+package org.gfccollective.guava.future
 
 import java.util.concurrent.Executors
-import com.gilt.gfc.guava.Predicate
+import org.gfccollective.guava.Predicate
 import com.google.common.util.concurrent.{Futures, ListenableFuture}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers

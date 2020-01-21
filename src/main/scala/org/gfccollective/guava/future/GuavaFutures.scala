@@ -1,4 +1,4 @@
-package com.gilt.gfc.guava.future
+package org.gfccollective.guava.future
 
 import java.lang.{Runnable => JRunnable}
 import java.util.concurrent.{Callable, ExecutorService}

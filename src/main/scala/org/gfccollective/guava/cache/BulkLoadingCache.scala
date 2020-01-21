@@ -1,12 +1,12 @@
-package com.gilt.gfc.guava.cache
+package org.gfccollective.guava.cache
 
 import java.lang.Iterable
 import java.util.{Map => JMap}
 import java.util.concurrent.{Callable, ScheduledExecutorService, TimeUnit, Executors}
 import java.util.concurrent.atomic.AtomicReference
 import scala.collection.JavaConverters._
-import com.gilt.gfc.guava.GuavaConverters._
-import com.gilt.gfc.concurrent.ThreadFactoryBuilder
+import org.gfccollective.guava.GuavaConverters._
+import org.gfccollective.concurrent.ThreadFactoryBuilder
 import com.google.common.base.{Supplier, Function => GFunction}
 import com.google.common.cache.{CacheLoader, CacheBuilder, LoadingCache}
 import org.slf4j.LoggerFactory

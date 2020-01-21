@@ -1,4 +1,4 @@
-package com.gilt.gfc.guava.cache;
+package org.gfccollective.guava.cache;
 
 /**
  * Prescribes the initialization strategy for a BulkLoadingCache: should it block until the cache is

@@ -1,4 +1,4 @@
-package com.gilt.gfc.guava
+package org.gfccollective.guava
 
 import com.google.common.base.{Predicate => GPredicate}
 import org.scalatest.funspec.AnyFunSpec
@@ -80,7 +80,7 @@ class PredicateTest extends AnyFunSpec with Matchers {
     }
 
     describe("explicit conversions") {
-      import com.gilt.gfc.guava.GuavaConverters._
+      import org.gfccollective.guava.GuavaConverters._
 
       it("should convert guava->scala") {
         scalaEval(1, isOdd.asScala) shouldBe true
@@ -95,7 +95,7 @@ class PredicateTest extends AnyFunSpec with Matchers {
 
 
     describe("implicit conversions") {
-      import com.gilt.gfc.guava.GuavaConversions._
+      import org.gfccollective.guava.GuavaConversions._
 
       it("should convert guava->scala") {
         scalaEval(1, isOdd) shouldBe true

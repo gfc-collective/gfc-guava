@@ -1,4 +1,4 @@
-package com.gilt.gfc.guava.cache;
+package org.gfccollective.guava.cache;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;

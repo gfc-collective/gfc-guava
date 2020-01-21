@@ -1,11 +1,11 @@
-package com.gilt.gfc.guava.future
+package org.gfccollective.guava.future
 
 import java.util.concurrent.{ExecutionException, Executor, TimeUnit}
 import scala.concurrent.{Await, Promise, CanAwait, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 import scala.util.{Try, Success, Failure}
-import com.gilt.gfc.util.Throwables
+import org.gfccollective.util.Throwables
 import com.google.common.util.concurrent.{ListenableFuture, MoreExecutors}
 
 /**

@@ -1,4 +1,4 @@
-package com.gilt.gfc.guava.cache
+package org.gfccollective.guava.cache
 
 import java.lang.{Integer => JInt}
 import java.util.concurrent.{TimeUnit, ScheduledExecutorService}
@@ -7,9 +7,9 @@ import org.mockito.Mockito._
 import org.mockito.ArgumentMatchers._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
-import org.scalatest.mock.MockitoSugar
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
 /**
  * Basic sanity tests of BulkLoadingCache.

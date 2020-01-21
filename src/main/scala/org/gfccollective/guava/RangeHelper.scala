@@ -1,4 +1,4 @@
-package com.gilt.gfc.guava
+package org.gfccollective.guava
 
 import java.lang.{Iterable => JIterable}
 import scala.collection.JavaConverters._
@@ -60,7 +60,7 @@ object RangeHelper {
 }
 
 object JRangeHelper {
-  import com.gilt.gfc.guava.GuavaConverters._
+  import org.gfccollective.guava.GuavaConverters._
 
   def build[T <: Comparable[_]](lower: Optional[T], upper:  Optional[T]): Optional[Range[T]] =
     RangeHelper.build(lower.asScala, upper.asScala).asJava

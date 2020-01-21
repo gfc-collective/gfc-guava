@@ -1,4 +1,4 @@
-package com.gilt.gfc.guava.future
+package org.gfccollective.guava.future
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{ExecutionException, TimeUnit, Executor}
@@ -8,9 +8,9 @@ import scala.concurrent.duration.Duration
 import com.google.common.util.concurrent.{ListenableFuture, Futures}
 import org.mockito.ArgumentMatchers.{any, eq => matchEq}
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
 object FutureConvertersTest {
   implicit class AwaitableFuture[A](val f: Future[A]) extends AnyVal {

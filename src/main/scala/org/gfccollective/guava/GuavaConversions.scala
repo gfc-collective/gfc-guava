@@ -1,4 +1,4 @@
-package com.gilt.gfc.guava
+package org.gfccollective.guava
 
 import com.google.common.base.{Optional, Predicate => GuavaPredicate, Supplier, Function => GFunction}
 
