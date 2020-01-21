@@ -21,11 +21,6 @@ import org.slf4j.LoggerFactory
  * what to do when there is a cache miss (default behavior is a RuntimeException); and an executor which is used to
  * actually schedule cache reloads.
  *
- * Note that caching, and Guava's caching, are hard topics. For example it is rarely a good idea to have a read-back
- * cache in Gilt's business model -- in general we never want to miss cache, which is what this implementation is
- * tuned for. But you may have some luck tweaking specific behavior by passing in your own CacheBuilder. Please do
- * read the Guava documentation carefully before embarking upon advanced use.
- *
  * @author Eric Bowman
  * @since 5/21/12 7:02 AM
  */
