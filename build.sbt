@@ -4,9 +4,9 @@ name := "gfc-guava"
 
 organization := "org.gfccollective"
 
-scalaVersion := "2.12.10"
+scalaVersion := "2.13.1"
 
-crossScalaVersions := Seq(scalaVersion.value)
+crossScalaVersions := Seq(scalaVersion.value, "2.12.10")
 
 scalacOptions += "-target:jvm-1.8"
 
@@ -19,7 +19,7 @@ libraryDependencies ++= Seq(
   "com.google.code.findbugs" % "jsr305" % "3.0.2",
   "org.scalatest" %% "scalatest" % "3.1.0" % Test,
   "org.scalatestplus" %% "mockito-3-2" % "3.1.0.0" % Test,
-  "org.mockito" % "mockito-core" % "3.2.4" % Test
+  "org.mockito" % "mockito-core" % "3.2.4" % Test,
 )
 
 ScoverageKeys.coverageMinimum := 64.1

@@ -86,7 +86,7 @@ class FutureConvertersTest extends AnyFunSuite with Matchers with MockitoSugar {
     }
 
     wrapped.isDone shouldBe true
-    verify(future).isCompleted
+    verify(future, atLeastOnce).isCompleted
 
     wrapped.isCancelled shouldBe false
 
