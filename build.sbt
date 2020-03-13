@@ -19,7 +19,7 @@ libraryDependencies ++= Seq(
   "com.google.code.findbugs" % "jsr305" % "3.0.2",
   "org.scalatest" %% "scalatest" % "3.1.1" % Test,
   "org.scalatestplus" %% "mockito-3-2" % "3.1.1.0" % Test,
-  "org.mockito" % "mockito-core" % "3.3.0" % Test,
+  "org.mockito" % "mockito-core" % "3.3.3" % Test,
 )
 
 ScoverageKeys.coverageMinimum := 64.1
