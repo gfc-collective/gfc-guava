@@ -15,7 +15,7 @@ javacOptions ++= Seq("-source", "1.8", "-target", "1.8")
 libraryDependencies ++= Seq(
   "org.gfccollective" %% "gfc-util" % "1.0.0",
   "org.gfccollective" %% "gfc-concurrent" % "1.0.0",
-  "com.google.guava" % "guava" % "28.2-jre",
+  "com.google.guava" % "guava" % "29.0-jre",
   "com.google.code.findbugs" % "jsr305" % "3.0.2",
   "org.scalatest" %% "scalatest" % "3.1.1" % Test,
   "org.scalatestplus" %% "mockito-3-2" % "3.1.1.0" % Test,
