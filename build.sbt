@@ -24,6 +24,8 @@ libraryDependencies ++= Seq(
 
 ScoverageKeys.coverageMinimum := 64.1
 
+ScoverageKeys.coverageFailOnMinimum := true
+
 releaseCrossBuild := true
 
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
